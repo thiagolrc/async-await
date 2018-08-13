@@ -6,11 +6,19 @@
 const axios = require('axios');
 
 const getExchangeRate = async (from, to) => {
-  var resp = await axios.get('http://data.fixer.io/api/latest?access_key=0b002012f2346e381f7a959dd73be718&format=1');
+    try{
+        var resp = await axios.get('http://data.fixer.io/api/latest?access_key=0b002012f2346e381f7a959dd73be718&format=1');
 
-  var rates = resp.data.rates;
-  var base = resp.data.base;
-  return rates[base] / rates[from] * rates[to];
+        var rates = resp.data.rates;
+        var base = resp.data.base;
+        var rate = rates[base] / rates[from] * rates[to];
+        if (isNaN(rate)) {
+            throw new Error();
+        }
+        return rate;
+    }catch(e) {
+        throw new Error(`Unabe to get exchange rate from ${from} to ${to}`);
+    }
 }
 
 const getExchangeRatePromises = (from, to) => {
@@ -32,8 +40,12 @@ const getCountriesPromises = (currency) => {
 };
 
 const getCountries = async (currency) => {
-    var resp = await axios.get(`https://restcountries.eu/rest/v2/currency/${currency}`);
-    return resp.data.map(country => country.name);
+    try {
+        var resp = await axios.get(`https://restcountries.eu/rest/v2/currency/${currency}`);
+        return resp.data.map(country => country.name);
+    } catch (e) {
+        throw new Error(`Unable to get countries that use ${currency}`);
+    }
 };
 
 const convertCurrencyPromises = (from, to, value) => {
@@ -71,6 +83,6 @@ const convertCurrencyParallel = (from, to, value) => {
 //     .then(rate => console.log(rate))
 //     .catch(e => console.log(e));
 
-convertCurrencyParallel('EUR', 'BRL', 1)
+convertCurrency('EUR', 'BRL', 1)
     .then(message => console.log(message))
     .catch(e => console.log(e));
