@@ -56,10 +56,21 @@ const convertCurrency = async (from, to, value) => {
     return `${value} ${from} is worth ${convertedValue} ${to}. You can spend these in the following countries: ${countries.join(', ')}`;
 };
 
+const convertCurrencyParallel = (from, to, value) => {
+    return Promise.all([getExchangeRate(from, to), getCountries(to)])
+        .then(values => {
+            const convertedValue = values[0] * value;
+            const countries = values[1];
+            return `${value} ${from} is worth ${convertedValue} ${to}. You can spend these in the following countries: ${countries.join(', ')}`;
+        });
+    ;
+};
+
+
 // getExchangeRate('EUR', 'BRL')
 //     .then(rate => console.log(rate))
 //     .catch(e => console.log(e));
 
-convertCurrency('EUR', 'BRL', 1)
+convertCurrencyParallel('EUR', 'BRL', 1)
     .then(message => console.log(message))
     .catch(e => console.log(e));
